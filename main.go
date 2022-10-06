@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/pflag"
 	"github.com/yudppp/json2struct"
@@ -16,27 +15,25 @@ func main() {
 	var parsed, file, outFile string
 	var debug, help bool
 	var err error
-	var flagset pflag.FlagSet
-	flagset.BoolVarP(&debug, "debug", "d", false, "Set debug mode")
-	flagset.BoolVarP(&opt.UseOmitempty, "omitempty", "O", false, "Set omitempty mode")
-	flagset.BoolVarP(&opt.UseShortStruct, "short", "S", false, "Set short struct name mode")
-	flagset.BoolVarP(&opt.UseLocal, "local", "l", false, "Use local struct mode")
-	flagset.BoolVarP(&opt.UseExample, "example", "e", false, "Use example tag mode")
-	flagset.BoolVarP(&help, "help", "h", false, "Help")
-	flagset.StringVarP(&opt.Prefix, "prefix", "p", "", "Set struct name prefix")
-	flagset.StringVarP(&opt.Suffix, "suffix", "s", "", "Set struct name suffix")
-	flagset.StringVarP(&opt.Name, "name", "n", json2struct.DefaultStructName, "Set struct name")
-	flagset.StringVarP(&file, "file", "f", "", "JSON File to parse")
-	flagset.StringVarP(&outFile, "file-out", "o", "", "File to be written. This will be the entire struct(s) in a complete .go file.")
-	flagset.Parse(os.Args[1:])
+	pflag.BoolVarP(&debug, "debug", "d", false, "Set debug mode")
+	pflag.BoolVarP(&opt.UseOmitempty, "omitempty", "O", false, "Set omitempty mode")
+	pflag.BoolVarP(&opt.UseShortStruct, "short", "S", false, "Set short struct name mode")
+	pflag.BoolVarP(&opt.UseLocal, "local", "l", false, "Use local struct mode")
+	pflag.BoolVarP(&opt.UseExample, "example", "e", false, "Use example tag mode")
+	pflag.BoolVarP(&help, "help", "h", false, "Help")
+	pflag.StringVarP(&opt.Prefix, "prefix", "p", "", "Set struct name prefix")
+	pflag.StringVarP(&opt.Suffix, "suffix", "s", "", "Set struct name suffix")
+	pflag.StringVarP(&opt.Name, "name", "n", "", "Set struct name")
+	pflag.StringVarP(&file, "file", "f", "", "JSON File to parse")
+	pflag.StringVarP(&outFile, "file-out", "o", "", "File to be written. This will be the entire struct(s) in a complete .go file.")
+	pflag.Parse()
 	if help {
 		fmt.Println(os.Args[0], "Version:", version, "\nUsage:")
-		flagset.PrintDefaults()
+		pflag.PrintDefaults()
 		fmt.Println(os.Args[0], "Can be used to generate a go struct. Ex:", os.Args[0], "-f filein.json -o fileout.go -n \"struct name\"")
 		os.Exit(1)
 	}
 	json2struct.SetDebug(debug)
-	opt.Name = strings.ToLower(opt.Name)
 	stat, _ := os.Stdin.Stat()
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
 		//jsonBod, _ = ioutil.ReadAll(os.Stdin)
