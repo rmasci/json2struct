@@ -43,6 +43,7 @@ type Options struct {
 	Name           string
 	Prefix         string
 	Suffix         string
+	File           string
 }
 
 func Parse(reader io.Reader, opt Options) (string, error) {
