@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	clipboard "github.com/atotto/clipboard"
 	"github.com/spf13/pflag"
 	"github.com/yudppp/json2struct"
 )
@@ -38,12 +40,20 @@ func main() {
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
 		//jsonBod, _ = ioutil.ReadAll(os.Stdin)
 		parsed, err = json2struct.Parse(os.Stdin, opt)
-	} else {
+	} else if file != "" {
 		//jsonBod := ReadInFile(file)
-		jsonBod, err := os.Open(file)
+		fmt.Println("Opening", file)
+		jsonFile, err := os.Open(file)
 		errorHandle(err, "os.Open", true)
-		parsed, err = json2struct.Parse(jsonBod, opt)
+		parsed, err = json2struct.Parse(jsonFile, opt)
 		errorHandle(err, "json2struct.Parse", true)
+	} else {
+		//Read from clipboard
+		text, err := clipboard.ReadAll()
+		errorHandle(err, "Clipboard Read All", true)
+		txtRdr := strings.NewReader(text)
+		parsed, err = json2struct.Parse(txtRdr, opt)
+		errorHandle(err, "error - is string valid JSON?", true)
 	}
 	if err != nil {
 		panic(err)
@@ -55,73 +65,6 @@ func main() {
 		fmt.Println(parsed)
 	}
 }
-
-// func ReadInFile(inFile string) (bod []byte) {
-// 	var f os.File
-// 	var err error
-// 	f, err = os.OpenFile(inFile, os.O_RDONLY, 0644)
-// 	errorHandle(err, "Can't Open the File "+inFile, true)
-// 	defer f.Close()
-// 	// Detect type of file
-// 	buff := make([]byte, 512)
-// 	_, err = f.Read(buff)
-// 	errorHandle(err, "Read File buff", true)
-// 	filetype := http.DetectContentType(buff)
-// 	switch filetype {
-// 	case "application/x-gzip":
-// 		f.Seek(0, 0)
-// 		fgz, err := gzip.NewReader(f)
-// 		errorHandle(err, "Gzip in", true)
-// 		bod, err = ioutil.ReadAll(fgz)
-// 		errorHandle(err, "Read GZip File", true)
-// 		return bod
-
-// 	case "application/zip":
-// 		z, err := zip.OpenReader(inFile)
-// 		errorHandle(err, "Reading zip file...", true)
-// 		defer z.Close()
-// 		for _, f := range z.File {
-// 			//c is contents
-// 			c, err := f.Open()
-// 			errorHandle(err, "Reading file in zip", true)
-// 			_, err = c.Read(buff)
-// 			filetype = http.DetectContentType(buff)
-// 			if strings.Contains(filetype, "text/plain") {
-// 				//f.Close()
-// 				c, _ := f.Open()
-// 				bod, err := ioutil.ReadAll(c)
-// 				errorHandle(err, "Read in File", true)
-// 				return bod
-// 			}
-// 			fmt.Printf("File: %v, filetype: %v\n ", f.Name, filetype)
-// 		}
-// 		fmt.Printf("No JSON or XML file in zip %v, %v\n", inFile, filetype)
-// 		os.Exit(1)
-// 	default:
-// 		f.Seek(0, 0)
-// 		bod, err := ioutil.ReadAll(f)
-// 		errorHandle(err, "Read in File", true)
-// 		head := make([]byte, 512)
-// 		if len(bod) >= 512 {
-// 			head = bod[512:]
-// 		} else {
-// 			head = bod
-// 		}
-// 		filetype = http.DetectContentType(head)
-// 		return bod
-// 	}
-// 	// if we're this far return and empty []byte
-// 	var ret []byte
-// 	return ret
-// }
-
-// func fileExists(filename string) bool {
-// 	info, err := os.Stat(filename)
-// 	if os.IsNotExist(err) {
-// 		return false
-// 	}
-// 	return !info.IsDir()
-// }
 
 func errorHandle(err error, str string, ex bool) {
 	if err != nil {
