@@ -19,7 +19,9 @@ linux: $(goFiles)
 	#upx binaries/json2struct-l64
 
 mac: $(goFiles)
-	GOOS=darwin GOARCH=amd64  go build $(compilerFlag) -ldflags="-X main.version=\"$(ver)\"" -o binaries/json2struct-mac $(goFiles)
-	cksum binaries/json2struct-mac > binaries/json2struct.cksum
+	GOOS=darwin GOARCH=arm64  go build $(compilerFlag) -ldflags="-X main.version=\"$(ver)\"" -o binaries/json2struct-m1 $(goFiles)
+	GOOS=darwin GOARCH=amd64  go build $(compilerFlag) -ldflags="-X main.version=\"$(ver)\"" -o binaries/json2struct-mx86 $(goFiles)
+	cksum binaries/json2struct-m1 > binaries/json2struct-m1.cksum
+	cksum binaries/json2struct-mx86 > binaries/json2struct-mx86.cksum
 	#upx binaries/json2struct-mac
 

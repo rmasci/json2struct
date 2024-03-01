@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"fmt"
 	"os"
 	"strings"
@@ -45,8 +46,15 @@ func main() {
 		fmt.Println("Opening", file)
 		jsonFile, err := os.Open(file)
 		errorHandle(err, "os.Open", true)
-		parsed, err = json2struct.Parse(jsonFile, opt)
-		errorHandle(err, "json2struct.Parse", true)
+		gzipReader, err := gzip.NewReader(jsonFile)
+		if err != nil {
+			parsed, err = json2struct.Parse(jsonFile, opt)
+			errorHandle(err, "json2struct.Parse", true)
+		} else {
+			parsed, err = json2struct.Parse(gzipReader, opt)
+			errorHandle(err, "json2struct.Parse gzip", true)
+		}
+
 	} else {
 		//Read from clipboard
 		text, err := clipboard.ReadAll()
